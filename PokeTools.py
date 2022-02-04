@@ -6,3 +6,18 @@ cur = con.cursor()
 #    print(row)
 pokemon = cur.execute(f'Select name,learnset from westwood_pokemonlearnsets') #unfinished
 logging.basicConfig(level=logging.INFO)
+
+#Process for creating a reference dictionary for westwood and locationFetch game names.
+# con = sqlite3.connect(westwoodData)
+# cur = con.cursor()
+# gameQuery = cur.execute("""
+# SELECT wg.id, wg.name
+# FROM westwood_game wg 
+# """)
+# gameIDS = {}
+# for id, game in gameQuery:
+#     game = str(game)
+#     game = game.replace("Pokemon","").lower()
+#     game = game.strip()
+#     gameIDS[game] = game
+# con.close()
