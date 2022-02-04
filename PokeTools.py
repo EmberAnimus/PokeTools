@@ -7,7 +7,7 @@ cur = con.cursor()
 pokemon = cur.execute(f'Select name,learnset from westwood_pokemonlearnsets') #unfinished
 logging.basicConfig(level=logging.INFO)
 
-#Process for creating a reference dictionary for westwood and locationFetch game names.
+#Process for creating a reference dictionary for westwood and locationFetch game names. - I need this later, but I'm not using it right now.
 # con = sqlite3.connect(westwoodData)
 # cur = con.cursor()
 # gameQuery = cur.execute("""
