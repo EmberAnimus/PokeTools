@@ -1,5 +1,10 @@
-import requests, logging, time, json
-logging.basicConfig(level=logging.INFO)
+import requests, logging, time, json, sqlite3 #Import needed tools
+
+logging.basicConfig(level=logging.INFO) #Establish Logging
+
+filePath = "PokeTools/locationData.json" #Set file paths
+westwoodSQL = "PokeTools/westwood.sqlite3"
+locationSQL = "PokeTools/locationData.sqlite3"
 #sets function to fetch webpage JSON.
 def fetch_json(url):
     webpage = requests.get(url)
@@ -7,9 +12,9 @@ def fetch_json(url):
     return web_json
 try:
     #tests for locationData file. will fail otherwise
-    file = open("locationData.json","r")
-    file.close()
-except:
+    file = open(filePath,"r")
+except IOError as err:
+    logging.info = f'Error: {err}'
     #sets some api, and fetches total amount of locations for total length.
     data_api = "https://pokeapi.co/api/v2/location-area/"
     tempLocations = fetch_json(data_api)
@@ -79,6 +84,54 @@ except:
     #          }
     #     }
     # }
-    with open('locationData.json','w') as locFile: #Dump the route data (variable is game_data, yes I know its confusing) to file.
-        json.dump(game_data, locFile)
-        locFile.close()
+    with open(filePath,'w') as file: #Dump the route data (variable is game_data, yes I know its confusing) to file.
+        json.dump(game_data, file)
+        file.close()
+    file = open(filePath,"r") #Re-opens the file in read mode.
+
+locationData = json.load(file) #reads the file and converts it to JSON
+westwoodCon = sqlite3.connect(westwoodSQL)
+westwoodCur = westwoodCon.cursor()
+gameQuery = westwoodCur.execute("SELECT wg.id, wg.name FROM westwood_game wg ") #Selects the game table from the westwood database
+gameIDS = []
+for id, game in gameQuery: #converts the game names from the westwood format to the API format
+    game = str(game)
+    game = game.replace("Pokemon","").lower().strip()
+    gameIDS.append(game) 
+westwoodCur.close() #Close the westwood database
+locationCon = sqlite3.connect(locationSQL)#Open/Create the locationData database
+locationCur = locationCon.cursor()
+locationCur.execute('SELECT count(name) FROM sqlite_master WHERE type="table" AND name="routeData"') #Check if the needed table exists
+update = False
+if locationCur.fetchone()[0]==1:
+    #Table exists, prompt for update
+    update = input("Table currently exists, do you wish to update the data? Y/N") 
+else:
+    #Create Table
+    locationCur.execute('''CREATE TABLE routeData
+                        (RouteName text, PokemonName text, GameIndex integer, EncounterMethod text, EncounterRate integer, MinLevel integer, MaxLevel integer)''')
+    
+if update=="Y" | locationCur.fetchone()[0]==0:#If an update is desired, or if the table is empty, update the table.
+    locationCur.execute("DELETE FROM routeData")
+    locationCon.commit()#Delete existing data
+
+    locationList = []
+    for RouteName, RouteSub in locationData.items():#Iterate through the locationData.json file for all information
+        for PokemonName, PokeSub in RouteSub.items():
+            for GameName, GameSub in PokeSub.items():
+                TempGame = GameName.replace("-"," ")
+                GameIndex = gameIDS.index(TempGame)
+                for EncounterMethod, EncounterSub in GameSub.items():
+                    EncounterRate = EncounterSub["encounter_rate"]
+                    MinLevel = EncounterSub["min_level"]
+                    MaxLevel = EncounterSub["max_level"]
+                    locationList.append((RouteName,PokemonName,GameIndex,EncounterMethod,EncounterRate,MinLevel,MaxLevel))#Append to locationList as tuple
+    locationCur.executemany("INSERT INTO routeData VALUES (?,?,?,?,?,?,?)",locationList)#Insert all rows (stored as tuples) to the database
+    locationCon.commit()#Commit the change
+    
+elif update=="N":#If the table is not empty, and an update isn't desired, print message accordingly
+    print("Table not updated. Closing program.")
+else: #Print error message
+    print('An error has occured.')
+locationCon.close()#Close connection
+file.close()#Close file
