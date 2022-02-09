@@ -2,3 +2,5 @@
 *.vsdx
 Poketools Schema.dbs
 westwood E-R diagram.html
+*.bak
+locationFetch.py
