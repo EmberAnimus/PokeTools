@@ -1,4 +1,4 @@
-# PokeTools
+# PokeTools (WIP)
 A set of tools to help with Nuzlockes - including some popular Rom-hacks. 
 It is my first large python project, and a side-project at that.
 
