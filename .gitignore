@@ -2,7 +2,5 @@
 *.vsdx
 *.dbs
 westwood E-R diagram.html
-*.bak
 locationFetch.py
-Poketools Schema.dbs.bak
 *.bak
