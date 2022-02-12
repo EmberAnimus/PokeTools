@@ -115,7 +115,7 @@ class uiInfo:
         tmMoves.append(tmMovesTemp)
 
         tmMoves = uiInfo.unfoldSQL(tmMoves)
-        tmMoves = uiInfo.appendSQL(tmMoves, "TM")[0]       
+        tmMoves = uiInfo.appendSQL(tmMoves, "TM")     
 
         return tmMoves
 
@@ -147,7 +147,7 @@ class uiInfo:
         tutorMoves.append(tutorMovesTemp)        
         
         tutorMoves = uiInfo.unfoldSQL(tutorMoves)
-        tutorMoves = uiInfo.appendSQL(tutorMoves, "Tutor")[0]
+        tutorMoves = uiInfo.appendSQL(tutorMoves, "Tutor")
 
         return tutorMoves
 
@@ -180,13 +180,36 @@ class uiInfo:
         learnsetMoves.append(learnsetMovesTemp)
 
         learnsetMoves = uiInfo.unfoldSQL(learnsetMoves)
-        learnsetMoves = uiInfo.appendSQL(learnsetMoves, "Learnset")[0]    
+        learnsetMoves = uiInfo.appendSQL(learnsetMoves, "Learnset")  
 
-        return learnsetMoves    
+        return learnsetMoves
     
-    def locationFilter(location, game):
-        #Filter by encounter location
-        pass
+    def locationFilter(game):
+        #Filter locations by game
+        locationCon = sqlite3.connect("PokeTools/locationData.sqlite3")
+        locationCur = locationCon.cursor()
+
+        locationSQLQuery = """SELECT r.RouteName
+                                FROM routeData r 
+                                WHERE r.GameIndex = ?
+                                GROUP BY r.RouteName"""
+
+        gameIndexQuery = """SELECT wg.id
+                            FROM westwood_game wg 
+                            WHERE wg.name = ?"""
+
+        cur.execute(gameIndexQuery, ([game]))
+        gameIndex = cur.fetchall()
+        gameIndex = uiInfo.unfoldSQL(gameIndex)
+
+        locationCur.execute(locationSQLQuery, gameIndex)
+        locationList = locationCur.fetchall()
+        for i in range(0,len(locationList)):
+            locationList[i] = locationList[i][0]
+        locationList = tuple(locationList)
+        locationCon.close()
+
+        return locationList
 
     def getEncounterDetails(route, game, pokemon):
         #Get encounter details
@@ -220,9 +243,9 @@ class uiInfo:
         cur.execute(natureSQLQuery, (nature))
         natureInfoTemp = cur.fetchall()
         natureInfo.append(natureInfoTemp)
-        natureInfo = uiInfo.unfoldSQL(natureInfo)[0]  
+        natureInfo = uiInfo.unfoldSQL(natureInfo) 
 
-        return natureInfo
+        return natureInfo[0]
 
     def getStatBlock(pokemon, game):
         pokemonStats = []
@@ -240,9 +263,9 @@ class uiInfo:
         cur.execute(statsSQLQuery.format(sqlPokemonFormsTable), (pokemon, game))
         pokemonStatsTemp = cur.fetchall()
         pokemonStats.append(pokemonStatsTemp)
-        pokemonStats = uiInfo.unfoldSQL(pokemonStats)[0]        
+        pokemonStats = uiInfo.unfoldSQL(pokemonStats)  
         
-        return pokemonStats
+        return pokemonStats[0]
 
     def getEvYield(pokemon):
 
@@ -259,9 +282,9 @@ class uiInfo:
         cur.execute(evSQLQuery.format(sqlPokemonFormsTable), ([pokemon]))
         evYieldTemp = cur.fetchall()
         evYield.append(evYieldTemp)
-        evYield = uiInfo.unfoldSQL(evYield)[0]
+        evYield = uiInfo.unfoldSQL(evYield)
 
-        return evYield
+        return evYield[0]
 
     def getType(pokemon, game):
 
@@ -280,10 +303,14 @@ class uiInfo:
         cur.execute(typeSQLQuery.format(sqlPokemonFormsTable), (pokemon, game))
         typeSetTemp = cur.fetchall()
         typeSet.append(typeSetTemp)
-        typeSet = uiInfo.unfoldSQL(typeSet)[0]
+        typeSet = uiInfo.unfoldSQL(typeSet)
 
-        return typeSet
+        return typeSet[0]
 
 if __name__ == "__main__":
-    for i in uiInfo.getPokemonStats("Eevee","Pokemon Platinum", "modest"): 
+    for i in uiInfo.getMoves("Eevee","Pokemon Platinum"):
+        for x in i: 
+            if len(x)>0: print(x)
+    for i in uiInfo.getPokemonStats("Eevee","Pokemon Platinum"): 
         if len(i)>0: print(i)
+    print(uiInfo.locationFilter("Pokemon Platinum"))
