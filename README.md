@@ -6,6 +6,9 @@ This project is currently still a massive work in progress, and is being worked 
 
 If you have stumbled across this page - feel free to leave constructive critisism on my work, suggest features, suggest changes, and so forth - just understand I do have a specific vision for this product, so I may not incorporate those suggestions. 
 
+## Announcement (of sorts)
+Due to my current workload between college and work, I don't have the time to healthily work on the project. It isn't abandoned, I'm just on haitus. No advancements or changes are likely to be made until my load lightens up a bit.
+
 # Disclaimer
 All Pokemon data is owned by The Pokemon Company International. This project should not be used for commercial purposes.
 
